@@ -13,10 +13,14 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Unzip project
+    - name: Unzip project files
       run: |
         if [ -f mod.zip ]; then
           unzip -o mod.zip
+          # نقل الملفات إذا كانت داخل مجلد فرعي
+          if [ ! -f gradlew ] && [ -d better-night-vision-template-26.2 ]; then
+            cp -r better-night-vision-template-26.2/* .
+          fi
         fi
 
     - name: Set up JDK 21
@@ -25,14 +29,11 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
-
     - name: Make gradlew executable
-      run: chmod +x gradlew
+      run: chmod +x gradlew || true
 
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew build --no-daemon
 
     - name: Upload Mod Jar
       uses: actions/upload-artifact@v4
