@@ -11,28 +11,24 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v4
 
-    - name: Setup environment and build
+    - name: Build Mod
       run: |
         if ls *.zip 1> /dev/null 2>&1; then
-          for file in *.zip; do
-            unzip -o "$file"
-          done
-          GRADLE_FILE=$(find . -name "gradlew" -print -quit)
-          if [ -n "$GRADLE_FILE" ]; then
-            DIR_PATH=$(dirname "$GRADLE_FILE")
-            if [ "$DIR_PATH" != "." ]; then
-              cp -rn "$DIR_PATH"/* . 2>/dev/null || true
-            fi
-          fi
+          for f in *.zip; do unzip -o "$f"; done
         fi
-
+        
+        # البحث عن مجلد المشروع ورفع الملفات للجذر
+        if [ -d "better-night-vision-template-26.2" ]; then
+          cp -r better-night-vision-template-26.2/* .
+        fi
+        
         if [ ! -f "gradlew" ]; then
           gradle wrapper --gradle-version 8.8
         fi
         
-        chmod +x gradlew || true
+        chmod +x gradlew
         ./gradlew build --no-daemon
 
     - name: Upload Mod Jar
