@@ -13,26 +13,35 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Extract mod.zip safely
+    - name: Extract mod.zip and setup project
       run: |
-        echo "Listing current files:"
+        echo "=== Checking repository content ==="
         ls -la
         if [ -f mod.zip ]; then
-          # فك الضغط وتجاوز المجلدات الوهمية
-          unzip -o mod.zip -d extracted_mod
-          cp -r extracted_mod/*/* . 2>/dev/null || cp -r extracted_mod/* . 2>/dev/null || true
+          unzip -o mod.zip -d extracted_files
+          echo "=== Content inside extracted_files ==="
+          ls -la extracted_files
+          
+          # البحث عن ملف gradlew في أي مجلد فرعي ونقل كل محتوياته للجذر
+          GRADLE_PATH=$(find extracted_files -name "gradlew" -print -quit)
+          if [ -n "$GRADLE_PATH" ]; then
+            PROJECT_DIR=$(dirname "$GRADLE_PATH")
+            echo "Found project at: $PROJECT_DIR"
+            cp -r "$PROJECT_DIR"/* .
+            cp -r "$PROJECT_DIR"/.* . 2>/dev/null || true
+          fi
         fi
-        echo "Files after extraction:"
+        echo "=== Root files after setup ==="
         ls -la
 
     - name: Set up JDK 21
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '21'
         distribution: 'temurin'
 
     - name: Make gradlew executable
-      run: chmod +x gradlew
+      run: chmod +x gradlew || true
 
     - name: Build with Gradle
       run: ./gradlew build --no-daemon
