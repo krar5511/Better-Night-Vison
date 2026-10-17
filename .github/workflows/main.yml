@@ -13,26 +13,20 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Find and extract any zip file
+    - name: Extract mod files
       run: |
-        # فك ضغط أي ملف zip موجود بالمستودع تلقائياً
         for file in *.zip; do
           if [ -f "$file" ]; then
-            echo "Extracting $file..."
-            unzip -o "$file" -d extracted_content
+            unzip -o "$file"
           fi
         done
-
-        # البحث عن مكان gradlew ونقل كل ملفات المشروع للجذر
         GRADLE_FILE=$(find . -name "gradlew" -print -quit)
         if [ -n "$GRADLE_FILE" ]; then
           DIR_PATH=$(dirname "$GRADLE_FILE")
-          echo "Found gradlew at $DIR_PATH, moving files..."
-          cp -rn "$DIR_PATH"/* . 2>/dev/null || true
-          cp -rn "$DIR_PATH"/.* . 2>/dev/null || true
-        else
-          echo "ERROR: gradlew file not found anywhere!"
-          exit 1
+          if [ "$DIR_PATH" != "." ]; then
+            cp -rn "$DIR_PATH"/* . 2>/dev/null || true
+            cp -rn "$DIR_PATH"/.* . 2>/dev/null || true
+          fi
         fi
 
     - name: Set up JDK 21
