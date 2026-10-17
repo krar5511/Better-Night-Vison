@@ -11,9 +11,9 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
-    - name: Extract zip if exists
+    - name: Setup environment and build
       run: |
         if ls *.zip 1> /dev/null 2>&1; then
           for file in *.zip; do
@@ -28,18 +28,10 @@ jobs:
           fi
         fi
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v5
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-
-    - name: Check files and build
-      run: |
         if [ ! -f "gradlew" ]; then
-          echo "Creating wrapper fallback..."
           gradle wrapper --gradle-version 8.8
         fi
+        
         chmod +x gradlew || true
         ./gradlew build --no-daemon
 
