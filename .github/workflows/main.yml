@@ -13,17 +13,16 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Unzip project files
+    - name: Extract mod.zip safely
       run: |
-        echo "=== Files before unzip ==="
+        echo "Listing current files:"
         ls -la
         if [ -f mod.zip ]; then
-          unzip -o mod.zip
-          # إذا كانت الملفات مطمورة بداخل مجلد فرعي
-          find . -maxdepth 2 -name "gradlew" -exec cp {} . \;
-          find . -maxdepth 2 -name "build.gradle" -exec cp -r $(dirname {})/* . \; 2>/dev/null || true
+          # فك الضغط وتجاوز المجلدات الوهمية
+          unzip -o mod.zip -d extracted_mod
+          cp -r extracted_mod/*/* . 2>/dev/null || cp -r extracted_mod/* . 2>/dev/null || true
         fi
-        echo "=== Files after unzip ==="
+        echo "Files after extraction:"
         ls -la
 
     - name: Set up JDK 21
@@ -33,7 +32,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Make gradlew executable
-      run: chmod +x gradlew || true
+      run: chmod +x gradlew
 
     - name: Build with Gradle
       run: ./gradlew build --no-daemon
